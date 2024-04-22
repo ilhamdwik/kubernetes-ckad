@@ -245,11 +245,117 @@ spec:
 ```
 
 
-### Admission Controllers
+
+#### Practice test Docker Images
+Base Operating System used by the python:3.6 image
+```
+docker run python:3.6 cat /etc/*release*
+```
+
+```
+docker run -p 8383:8080 webapp-color:lite
+```
+
 ```
 k exec kube-apiserver-kubemaster1 -n kube-system -- kube-apiserver -h | grep enable-admission-plugins
 ```
 
+#### Job
+
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: throw-dice-job
+spec:
+  completions: 3
+  backoffLimit: 25 # This is so the job does not quit before it succeeds.
+  template:
+    spec:
+      containers:
+      - name: throw-dice
+        image: kodekloud/throw-dice
+      restartPolicy: Never
+```
+
+#### Multi-Container PODs
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: yellow
+spec:
+  containers:
+  - name: lemon
+    image: busybox
+    command:
+      - sleep
+      - "1000"
+
+  - name: gold
+    image: redis
+```
+
+```
+kubectl -n elastic-stack exec -it app -- cat /log/app.log
+```
+
+https://kubernetes.io/docs/tasks/access-application-cluster/communicate-containers-same-pod-shared-volume/
+https://bit.ly/2EXYdHf
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+  namespace: elastic-stack
+  labels:
+    name: app
+spec:
+  containers:
+  - name: app
+    image: kodekloud/event-simulator
+    volumeMounts:
+    - mountPath: /log
+      name: log-volume
+
+  - name: sidecar
+    image: kodekloud/filebeat-configured
+    volumeMounts:
+    - mountPath: /var/log/event-simulator/
+      name: log-volume
+
+  volumes:
+  - name: log-volume
+    hostPath:
+      # directory location on host
+      path: /var/log/webapp
+      # this field is optional
+      type: DirectoryOrCreate
+```
+
+#### Init Containers
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app.kubernetes.io/name: MyApp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+  initContainers:
+  - name: init-myservice
+    image: busybox:1.28
+    command: ["sleep", "20"]
+```
+
+
+### Admission Controllers
 
 ### Validating Admission Controllers
 
