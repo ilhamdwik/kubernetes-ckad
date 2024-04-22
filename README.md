@@ -355,6 +355,13 @@ spec:
 ```
 
 
+#### Labs - Helm Concepts
+
+Download the bitnami apache package under the /root directory.
+```
+helm pull --untar  bitnami/apache
+```
+
 ### Admission Controllers
 
 ### Validating Admission Controllers
