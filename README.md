@@ -354,6 +354,61 @@ spec:
     command: ["sleep", "20"]
 ```
 
+#### Job & CronJob
+
+##### Job
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  parallelism: 3
+  completions: 3
+  template:
+    spec:
+      containers:
+      - name: pi
+        image: perl:5.34.0
+        command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
+  backoffLimit: 25
+```
+
+##### CronJob
+```
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+```
+
+```
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │                                   OR sun, mon, tue, wed, thu, fri, sat
+# │ │ │ │ │ 
+# │ │ │ │ │
+# * * * * *
+```
 
 #### Labs - Helm Concepts
 
@@ -362,19 +417,103 @@ Download the bitnami apache package under the /root directory.
 helm pull --untar  bitnami/apache
 ```
 
-### Admission Controllers
 
-### Validating Admission Controllers
+#### Lab - API Versions/Deprecations
 
-### Mutating Admission Controllers
+```
+k proxy 8001&
+curl localhost:8001/apis/authorization.k8s.io
+```
+
+#### Readiness & Liveness Probes
+
+```
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 80
+      periodSeconds: 1
+```
+
+```
+    readinessProbe:
+      tcpSocket:
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    livenessProbe:
+      tcpSocket:
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10
+```
 
 
-### API Version
+#### Admission Controllers
+
+#### Validating Admission Controllers
+
+#### Mutating Admission Controllers
+
+
+#### API Version
 ```
 k explain deployment
 ```
 
-##### Kubectl Convert
+#### Kubectl Convert
+
+##### Install
+```
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl-convert"
+
+chmod +x kubectl-convert
+
+mv kubectl-convert /usr/local/bin/
+
+kubectl-convert -h
+```
+
 ```
 kubectl convert -f <old-file> --output-version <new-api>
+```
+
+
+
+## Domains & Competencies
+```
+Application Design and Build (20%)
+Define, build and modify container images
+Choose and use the right workload resource (Deployment, DaemonSet, CronJob, etc.)
+Understand multi-container Pod design patterns (e.g. sidecar, init and others)
+Utilize persistent and ephemeral volumes
+
+Application Deployment (20%)
+Use Kubernetes primitives to implement common deployment strategies (e.g. blue/green or canary)
+Understand Deployments and how to perform rolling updates
+Use the Helm package manager to deploy existing packages
+Kustomize
+
+Application Observability and Maintenance (15%)
+Understand API deprecations
+Implement probes and health checks
+Use built-in CLI tools to monitor Kubernetes applications
+Utilize container logs
+Debugging in Kubernetes
+
+Application Environment, Configuration and Security (25%)
+Discover and use resources that extend Kubernetes (CRD, Operators)
+Understand authentication, authorization and admission control
+Understand Requests, limits, quotas
+Understand ConfigMaps
+Define resource requirements
+Create & consume Secrets
+Understand ServiceAccounts
+Understand Application Security (SecurityContexts, Capabilities, etc.)
+
+Services and Networking (20%)
+Demonstrate basic understanding of NetworkPolicies
+Provide and troubleshoot access to applications via services
+Use Ingress rules to expose applications
 ```
