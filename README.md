@@ -417,6 +417,26 @@ Download the bitnami apache package under the /root directory.
 helm pull --untar  bitnami/apache
 ```
 
+#### Security Context
+
+pod ubuntu-sleeper to run as Root user and with the SYS_TIME capability.
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-sleeper
+  namespace: default
+spec:
+  containers:
+  - command:
+    - sleep
+    - "4800"
+    image: ubuntu
+    name: ubuntu-sleeper
+    securityContext:
+      capabilities:
+        add: ["SYS_TIME"]
+```
 
 #### Lab - API Versions/Deprecations
 
@@ -452,10 +472,109 @@ curl localhost:8001/apis/authorization.k8s.io
 
 #### Admission Controllers
 
+##### Labs - Admission Controllers
+
+Check enable-admission-plugins in kube-apiserver help options
+```
+kubectl exec -it kube-apiserver-controlplane -n kube-system -- kube-apiserver -h | grep 'enable-admission-plugins'
+```
+
+Which admission controller is enabled in this cluster which is normally disabled?
+```
+grep enable-admission-plugins /etc/kubernetes/manifests/kube-apiserver.yaml
+```
+
+Disable DefaultStorageClass admission controller
+```
+nano /etc/kubernetes/manifests/kube-apiserver.yaml
+
+and add line
+
+- --disable-admission-plugins=DefaultStorageClass
+```
+
+Since the kube-apiserver is running as pod you can check the process to see enabled and disabled plugins.
+```
+ps -ef | grep kube-apiserver | grep admission-plugins
+```
+
 #### Validating Admission Controllers
 
 #### Mutating Admission Controllers
 
+#### ConfigMaps
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapp-color
+spec:
+  containers:
+    - name: webapp-color
+      image: kodekloud/simple-webapp-color
+      env:
+        - name: APP_COLOR
+          valueFrom:
+            configMapKeyRef:
+              name: webapp-config-map
+              key: APP_COLOR
+  restartPolicy: Never
+```
+
+#### Secrets
+
+pod use secret
+```
+apiVersion: v1 
+kind: Pod 
+metadata:
+  labels:
+    name: webapp-pod
+  name: webapp-pod
+  namespace: default 
+spec:
+  containers:
+  - image: kodekloud/simple-webapp-mysql
+    imagePullPolicy: Always
+    name: webapp
+    envFrom:
+    - secretRef:
+        name: db-secret
+```
+
+#### ServiceAccount
+
+```
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: web-dashboard
+    namespace: default
+  spec:
+    selector:
+      matchLabels:
+        name: web-dashboard
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: web-dashboard
+      spec:
+        containers:
+        - env:
+          - name: PYTHONUNBUFFERED
+            value: "1"
+          image: gcr.io/kodekloud/customimage/my-kubernetes-dashboard
+          imagePullPolicy: Always
+          name: web-dashboard
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+        serviceAccount: dashboard-sa
+```
 
 #### API Version
 ```
