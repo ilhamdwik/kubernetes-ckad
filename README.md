@@ -598,7 +598,107 @@ kubectl-convert -h
 kubectl convert -f <old-file> --output-version <new-api>
 ```
 
+#### Netpol
 
+Create a network policy to allow traffic from the Internal application only to the payroll-service and db-service.
+
+
+Use the spec given below. You might want to enable ingress traffic to the pod to test your rules in the UI.
+
+Also, ensure that you allow egress traffic to DNS ports TCP and UDP (port 53) to enable DNS resolution from the internal pod.
+
+Policy Name: internal-policy
+
+Policy Type: Egress
+
+Egress Allow: payroll
+
+Payroll Port: 8080
+
+Egress Allow: mysql
+
+MySQL Port: 3306
+
+
+Solution manifest file for a network policy internal-policy as follows:
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: internal-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      name: internal
+  policyTypes:
+  - Egress
+  - Ingress
+  ingress:
+    - {}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          name: mysql
+    ports:
+    - protocol: TCP
+      port: 3306
+
+  - to:
+    - podSelector:
+        matchLabels:
+          name: payroll
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+```
+
+Note: We have also allowed Egress traffic to TCP and UDP port. This has been added to ensure that the internal DNS resolution works from the internal pod.
+
+Remember: The kube-dns service is exposed on port 53:
+
+
+#### Ingress
+
+If the requirement does not match any of the configured paths in the Ingress, to which service are the requests forwarded?
+```
+kubectl get deploy ingress-nginx-controller -n ingress-nginx -o yaml
+```
+
+default backend service
+```
+- --default-backend-service=app-space/default-backend-service
+```
+
+ingress pay-service
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-ingress
+  namespace: critical-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /pay
+        pathType: Prefix
+        backend:
+          service:
+           name: pay-service
+           port:
+            number: 8282
+```
 
 ## Domains & Competencies
 ```
