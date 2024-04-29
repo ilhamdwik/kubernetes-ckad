@@ -424,6 +424,156 @@ kubectl logs dev-pod-dind-878516 -c log-x | grep WARNING > /opt/dind-878516_logs
 
 
 
+Task
+Create a new Ingress Resource for the service my-video-service to be made available at the URL: http://ckad-mock-exam-solution.com:30093/video.
+
+To create an ingress resource, the following details are: -
+
+annotation: nginx.ingress.kubernetes.io/rewrite-target: /
+
+host: ckad-mock-exam-solution.com
+
+path: /video
+
+Once set up, the curl test of the URL from the nodes should be successful: HTTP 200
+
+Solution
+Create an ingress resource manifest file using the imperative command:-
+
+kubectl create ingress ingress --rule="ckad-mock-exam-solution.com/video*=my-video-service:8080" --dry-run=client -oyaml > ingress.yaml
+And then add the rewrite-target annotation.
+
+The final manifest file will look like this.
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: ingress
+spec:
+  rules:
+  - host: ckad-mock-exam-solution.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: my-video-service
+            port:
+              number: 8080
+        path: /video
+        pathType: Prefix
+```
+
+
+Task
+Create a job called whalesay with image docker/whalesay and command "cowsay I am going to ace CKAD!".
+
+completions: 10
+
+backoffLimit: 6
+
+restartPolicy: Never
+
+This simple job runs the popular cowsay game that was modifed by docker…
+
+Solution
+Solution manifest file to create a job called whalesay as follows:-
+
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: whalesay
+spec:
+  completions: 10
+  backoffLimit: 6
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - command:
+        - sh 
+        - -c
+        - "cowsay I am going to ace CKAD!"
+        image: docker/whalesay
+        name: whalesay
+      restartPolicy: Never
+```
+
+
+Task
+Create a pod called multi-pod with two containers.
+
+Container 1:
+name: jupiter, image: nginx
+
+Container 2:
+name: europa, image: busybox
+command: sleep 4800
+
+Environment Variables:
+
+Container 1:
+
+type: planet
+
+Container 2:
+
+type: moon
+
+Solution
+Solution manifest file to create a multi pod containers called multi-pod as follows:-
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: multi-pod
+  name: multi-pod
+spec:
+  containers:
+  - image: nginx
+    name: jupiter
+    env:
+    - name: type
+      value: planet
+  - image: busybox
+    name: europa
+    command: ["/bin/sh","-c","sleep 4800"]
+    env:
+     - name: type
+       value: moon
+```
+
+
+Task
+Create a PersistentVolume called custom-volume with size: 50MiB reclaim policy:retain, Access Modes: ReadWriteMany and hostPath: /opt/data
+
+Solution
+Solution manifest file to create a Persistent Volume called custom-volume as follows:-
+
+```
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: custom-volume
+spec:
+  accessModes: ["ReadWriteMany"]
+  capacity:
+    storage: 50Mi
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /opt/data
+```
+
+
+
 
 
 #### Practice test Docker Images
@@ -879,6 +1029,11 @@ spec:
            port:
             number: 8282
 ```
+
+
+
+
+
 
 ## Domains & Competencies
 ```
