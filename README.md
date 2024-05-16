@@ -1041,6 +1041,8 @@ spec:
 ```
 
 
+#### Service Account - Set Service Account to deployment
+kubectl set serviceaccount deployment nginx-deployment serviceaccount1
 
 
 
