@@ -697,6 +697,31 @@ spec:
 #### Job & CronJob
 
 ##### Job
+
+#### Job
+```
+k create job throw-dice-job --image=kodekloud/throw-dice
+```
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: throw-dice-job
+spec:
+  backoffLimit: 50
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - image: kodekloud/throw-dice
+        name: throw-dice-job
+        resources: {}
+      restartPolicy: Never
+status: {}
+```
+
 ```
 apiVersion: batch/v1
 kind: Job
@@ -1042,7 +1067,55 @@ spec:
 
 
 #### Service Account - Set Service Account to deployment
+```
 kubectl set serviceaccount deployment nginx-deployment serviceaccount1
+```
+
+#### Taint and Tolerations
+```
+kubectl taint nodes foo dedicated=special-user:NoSchedule
+```
+
+##### Remove taint node on controlplane
+```
+kubectl taint nodes controlplane node-role.kubernetes.io/control-plane:NoSchedule-
+```
+
+
+#### Label Node
+```
+kubectl label node node01 color=blue
+```
+
+#### Node Affinity
+```
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: red
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      run: nginx
+  template:
+    metadata:
+      labels:
+        run: nginx
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+```
 
 
 
