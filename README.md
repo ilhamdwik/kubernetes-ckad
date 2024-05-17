@@ -257,6 +257,51 @@ spec:
     command: ["sleep", "20"]
 ```
 
+### Labels and Selector
+
+```
+kubectl get pods --selector env=dev
+
+kubectl get pods --selector env=dev --no-headers | wc -l
+
+kubectl get all --selector env=prod
+
+kubectl get all --selector env=prod --no-headers | wc -l
+
+k get pod --selector env=prod,bu=finance,tier=frontend
+```
+
+### Rolling Updates & Rollbacks
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: nginx-deployment
+ labels:
+   app: nginx
+spec:
+ replicas: 3
+ selector:
+   matchLabels:
+     app: nginx
+ template:
+   metadata:
+     labels:
+       app: nginx
+   spec:
+     containers:
+     - name: nginx
+       image: nginx:1.14.2
+       ports:
+       - containerPort: 80
+ strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 1
+     maxUnavailable: 1
+```
+
 ### Practice test Docker Images
 Base Operating System used by the python:3.6 image
 ```
