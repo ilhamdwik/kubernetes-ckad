@@ -1181,6 +1181,7 @@ You may delete and recreate the object. Ignore the warnings from the probe.
 Solution
 The pod nginx1401 is not in a Ready state as the Readiness Probe has failed. Here is the solution YAML file:
 
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1207,8 +1208,7 @@ spec:
         - /var/www/html/file_check
       initialDelaySeconds: 10
       periodSeconds: 60
-
-Details
+```
 
 Q. 2
 
@@ -1224,6 +1224,7 @@ You don't have to wait for the job completion. As long as the cronjob has been c
 Solution
 Use the following YAML file to create the cronjob:
 
+```
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -1241,8 +1242,7 @@ spec:
           - name: dice
             image: kodekloud/throw-dice
           restartPolicy: Never
-
-Details
+```
 
 Q. 3
 
@@ -1256,6 +1256,7 @@ Make sure that the pod is scheduled on controlplane and no other node in the clu
 Solution
 Use the following YAML file to create the pod:
 
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1282,8 +1283,7 @@ spec:
     - name: secret-volume
       readOnly: true
       mountPath: "/etc/secret-volume"
-
-Details
+```
 
 Q. 4
 
@@ -1303,6 +1303,7 @@ Here 30093 is the port used by the Ingress Controller
 Solution
 Use the following YAML to create the ingress resource:
 
+```
 ---
 kind: Ingress
 apiVersion: networking.k8s.io/v1
@@ -1332,8 +1333,7 @@ spec:
             name: apparels-service
             port:
               number: 8080
-
-Details
+```
 
 Q. 5
 
@@ -1343,7 +1343,9 @@ A pod called dev-pod-dind-878516 has been deployed in the default namespace. Ins
 Solution
 Run the command:
 
+```
 kubectl logs dev-pod-dind-878516 -c log-x | grep WARNING > /opt/dind-878516_logs.txt
+```
 
 
 ------------------------------------------------------------------------------------------------------------------------------------
